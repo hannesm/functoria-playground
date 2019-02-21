@@ -12,6 +12,9 @@ let crunch =
   object
     inherit base_configurable
     method ty = kv_ro
+    (* in mirage_impl_kv_ro:
+       val name = Name.create ("static" ^ dirname) ~prefix:"static"
+       method name = name *)
     method name = "crunch"
     method module_name = "Static"
     method! keys = [ key ]
