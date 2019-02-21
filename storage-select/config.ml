@@ -15,23 +15,16 @@ let storage =
   let converter = Key.Arg.conv ~conv:(parser, printer) ~serialize ~runtime_conv:"storage" in
   Key.(create "storage" Arg.(opt ~stage:`Configure converter default_mem doc))
 
-type kv_rw = KV_RW
-let kv_rw = Type KV_RW
+type kv = KV
+let kv = Type KV
 
-let main =
-  foreign
-    "Unikernel.Main" (kv_rw @-> job)
+let main = foreign "Unikernel.Main" (kv @-> job)
 
 let kv_mem = impl @@ object
     inherit base_configurable
-    method ty = pclock @-> kv_rw
+    method ty = pclock @-> kv
     method name = "mirage-kv-mem"
     method module_name = "Mirage_kv_mem.Make"
-    method! packages =
-      Key.pure [
-        package "mirage-kv-mem";
-      ]
-    method! connect _ modname _ = Fmt.strf "%s.connect ()" modname
   end
 
 let unix_dir =
@@ -42,15 +35,10 @@ let kv_unix =
   let key = Key.abstract unix_dir in
   object
     inherit base_configurable
-    method ty = kv_rw
+    method ty = kv
     method name = "mirage-kv-unix"
     method module_name = "Mirage_kv_unix"
     method! keys = [ key ]
-    method! packages =
-      Key.pure [
-        package "mirage-kv-unix";
-      ]
-    method! connect _ modname _ = Fmt.strf "%s.connect (match %a with Some x -> x | None -> assert false)" modname Key.serialize_call key 
   end
 
 let store =
